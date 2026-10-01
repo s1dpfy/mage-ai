@@ -1,3 +1,4 @@
+import base64
 import io
 import json
 import os
@@ -93,7 +94,8 @@ async def get_rankings():
                 "tag": item.get("tag", ""),
                 "price": item.get("price", "0원"),
                 "price_num": item.get("price_num", 0),
-                "reason": item.get("reason", "")
+                "reason": item.get("reason", ""),
+                "image_url": item.get("image_url", "")
             })
         return JSONResponse(content=rankings)
     except Exception as e:
@@ -110,12 +112,31 @@ async def evaluate_image(
         raise HTTPException(status_code=500, detail="Gemini API Key가 누락되었습니다.")
 
     try:
-        # 512px 경량화
         image_bytes = await file.read()
         image = Image.open(io.BytesIO(image_bytes))
-        image.thumbnail((512, 512), Image.Resampling.LANCZOS)
+        
         if image.mode in ("RGBA", "P"):
             image = image.convert("RGB")
+
+        # 랭킹 썸네일용 1:1 중앙 크롭 & 200x200 압축
+        w, h = image.size
+        min_dim = min(w, h)
+        left = (w - min_dim) / 2
+        top = (h - min_dim) / 2
+        right = (w + min_dim) / 2
+        bottom = (h + min_dim) / 2
+
+        cropped_img = image.crop((left, top, right, bottom))
+        cropped_img.thumbnail((200, 200), Image.Resampling.LANCZOS)
+
+        img_buffer = io.BytesIO()
+        cropped_img.save(img_buffer, format="JPEG", quality=80)
+        base64_str = base64.b64encode(img_buffer.getvalue()).decode("utf-8")
+        image_url = f"data:image/jpeg;base64,{base64_str}"
+
+        # Gemini API 전송용 경량화 (512px)
+        ai_image = image.copy()
+        ai_image.thumbnail((512, 512), Image.Resampling.LANCZOS)
 
         client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -142,7 +163,7 @@ async def evaluate_image(
 
         response = client.models.generate_content(
             model="gemini-3.8-flash",
-            contents=[image, prompt],
+            contents=[ai_image, prompt],
             config={"temperature": 0.7}
         )
 
@@ -158,7 +179,7 @@ async def evaluate_image(
                 data["price"] = "200만 원 (상한선)"
                 data["price_num"] = 2000000
 
-        # Firestore에 저장
+        # Firestore에 저장 (이미지 썸네일 포함)
         record = {
             "username": username,
             "name": data.get("name", "미확인"),
@@ -166,6 +187,7 @@ async def evaluate_image(
             "price": data.get("price", "0원"),
             "price_num": price_num,
             "reason": data.get("reason", ""),
+            "image_url": image_url,
             "created_at": datetime.utcnow()
         }
         db.collection("rankings").add(record)
