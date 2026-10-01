@@ -9,7 +9,6 @@
     
     <style>
         :root {
-            /* 전문적이고 차분한 데스크탑 테마 (SaaS 스타일) */
             --primary: #4f46e5;
             --primary-hover: #4338ca;
             --bg-color: #f8fafc;
@@ -36,7 +35,6 @@
             flex-direction: column;
         }
 
-        /* 상단 네비게이션 바 */
         header {
             background-color: var(--surface);
             border-bottom: 1px solid var(--border);
@@ -70,7 +68,6 @@
             font-weight: 600;
         }
 
-        /* 메인 레이아웃 (좌우 2단 분리) */
         main {
             flex: 1;
             max-width: 1200px;
@@ -83,7 +80,6 @@
             align-items: start;
         }
 
-        /* 좌측: 카메라 섹션 */
         .camera-section {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -104,7 +100,7 @@
 
         #video-container {
             width: 100%;
-            aspect-ratio: 16 / 9; /* PC 웹캠에 맞는 가로 비율 */
+            aspect-ratio: 16 / 9;
             background: #1e293b;
             border-radius: 4px;
             position: relative;
@@ -126,7 +122,6 @@
             display: none;
         }
 
-        /* 스캐닝 애니메이션 */
         #scanner {
             display: none;
             position: absolute;
@@ -147,7 +142,6 @@
             100% { top: 100%; }
         }
 
-        /* 컨트롤 버튼 그룹 */
         .controls {
             margin-top: 20px;
             display: flex;
@@ -176,7 +170,6 @@
         
         .btn-lg { padding: 12px 24px; font-size: 15px; flex: 1; }
 
-        /* 우측: 결과 섹션 */
         .result-section {
             display: flex;
             flex-direction: column;
@@ -237,7 +230,6 @@
             line-height: 1.6;
         }
 
-        /* 모달 (PC형 중앙 팝업) */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.6);
@@ -287,12 +279,25 @@
             border-bottom: 1px solid var(--border);
         }
         .rank-item:last-child { border-bottom: none; }
-        .rank-num { width: 40px; font-size: 16px; font-weight: 700; color: var(--text-sub); }
+        .rank-num { width: 36px; font-size: 16px; font-weight: 700; color: var(--text-sub); flex-shrink: 0; }
         .rank-1 { color: var(--primary); }
-        .rank-info { flex: 1; }
-        .rank-user { font-weight: 600; color: var(--text-main); margin-right: 8px; }
-        .rank-obj { font-size: 13px; color: var(--text-sub); }
-        .rank-price { font-size: 16px; font-weight: 700; color: var(--text-main); text-align: right; }
+        
+        /* 랭킹 이미지 썸네일 스타일 */
+        .rank-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 6px;
+            object-fit: cover;
+            margin-right: 14px;
+            border: 1px solid var(--border);
+            background-color: #f1f5f9;
+            flex-shrink: 0;
+        }
+
+        .rank-info { flex: 1; min-width: 0; }
+        .rank-user { font-weight: 600; color: var(--text-main); margin-right: 8px; display: inline-block; }
+        .rank-obj { font-size: 13px; color: var(--text-sub); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .rank-price { font-size: 16px; font-weight: 700; color: var(--text-main); text-align: right; flex-shrink: 0; margin-left: 12px; }
 
         canvas { display: none; }
     </style>
@@ -307,7 +312,6 @@
     </header>
 
     <main>
-        <!-- 좌측 카메라 컨트롤 패널 -->
         <div class="camera-section">
             <div class="section-title">
                 대상 촬영
@@ -331,7 +335,6 @@
             </div>
         </div>
 
-        <!-- 우측 결과 및 부가 기능 패널 -->
         <div class="result-section">
             <div class="panel">
                 <div class="section-title">분석 결과</div>
@@ -362,7 +365,6 @@
         </div>
     </main>
 
-    <!-- 랭킹 모달 (PC형) -->
     <div id="ranking-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -370,7 +372,7 @@
                 <button class="btn-close" onclick="closeRankingModal()">✕</button>
             </div>
             <div class="ranking-list" id="ranking-list">
-                <!-- Data goes here -->
+                <!-- 랭킹 리스트 생성 구역 -->
             </div>
         </div>
     </div>
@@ -398,9 +400,8 @@
         const username = document.getElementById("current-user").innerText;
 
         let stream = null;
-        let currentFacingMode = "user"; // PC는 보통 전면 웹캠을 기본으로 함
+        let currentFacingMode = "user";
 
-        // 랭킹 모달 열기
         async function openRankingModal() {
             modal.style.display = "flex";
             setTimeout(() => modal.classList.add("show"), 10); 
@@ -419,6 +420,7 @@
                 rankingList.innerHTML = list.map(item => `
                     <div class="rank-item">
                         <div class="rank-num ${item.rank === 1 ? 'rank-1' : ''}">${item.rank}</div>
+                        ${item.image_url ? `<img src="${item.image_url}" class="rank-img" alt="${item.name}">` : '<div class="rank-img"></div>'}
                         <div class="rank-info">
                             <span class="rank-user">${item.username}</span>
                             <span class="rank-obj">${item.name}</span>
@@ -431,18 +433,15 @@
             }
         }
 
-        // 랭킹 모달 닫기
         function closeRankingModal() {
             modal.classList.remove("show");
             setTimeout(() => modal.style.display = "none", 200);
         }
 
-        // 모달 배경 클릭 시 닫기
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeRankingModal();
         });
 
-        // 카메라 시작
         async function openCameraStream(mode) {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
@@ -450,7 +449,6 @@
 
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
-                    // PC 웹캠에 맞게 가로 해상도(HD급) 요청
                     video: { facingMode: { ideal: mode }, width: { ideal: 1280 }, height: { ideal: 720 } },
                     audio: false
                 });
@@ -460,7 +458,6 @@
                 video.style.display = "block";
                 video.srcObject = stream;
                 
-                // 좌우 반전 처리 (사용자 방향일 경우 거울 모드)
                 if (mode === "user") {
                     video.style.transform = "scaleX(-1)";
                 } else {
@@ -472,7 +469,6 @@
                 btnSnap.style.display = "inline-flex";
                 btnSwitch.style.display = "inline-flex";
                 
-                // 결과창 초기화
                 emptyState.style.display = "block";
                 resultBox.style.display = "none";
                 loadingState.style.display = "none";
@@ -491,13 +487,11 @@
             openCameraStream(currentFacingMode);
         }
 
-        // 촬영 및 측정
         function takeSnapshot() {
             canvas.width = video.videoWidth || 1280;
             canvas.height = video.videoHeight || 720;
             const ctx = canvas.getContext("2d");
 
-            // 거울 모드 반전 캔버스 처리
             if (currentFacingMode === "user") {
                 ctx.translate(canvas.width, 0);
                 ctx.scale(-1, 1);
@@ -508,7 +502,6 @@
             preview.src = canvas.toDataURL("image/jpeg");
             preview.style.display = "block";
             
-            // 프리뷰도 반전 적용
             if (currentFacingMode === "user") {
                 preview.style.transform = "scaleX(-1)";
             } else {
@@ -525,12 +518,10 @@
                 stream.getTracks().forEach(track => track.stop());
             }
 
-            // 우측 패널 상태 변경
             emptyState.style.display = "none";
             resultBox.style.display = "none";
             loadingState.style.display = "block";
             
-            // 좌측 스캐너 애니메이션
             scanner.style.display = "block";
 
             canvas.toBlob(async function(blob) {
