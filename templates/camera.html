@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>사진 촬영 및 랭킹</title>
+    <title>물건 가치 측정기</title>
     <style>
         body {
             margin: 0;
@@ -12,9 +12,9 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: #f5f5f5;
         }
-        h1 { margin-bottom: 5px; }
+        h1 { margin-bottom: 5px; font-size: 26px; }
         .username {
-            font-size: 17px;
+            font-size: 16px;
             color: #555;
             margin-bottom: 15px;
         }
@@ -27,24 +27,20 @@
         }
         .btn {
             display: inline-block;
-            padding: 13px 22px;
+            padding: 12px 20px;
             background: #222;
             color: white;
             border-radius: 12px;
-            font-size: 17px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             border: none;
         }
         .btn:active { transform: scale(0.97); }
-        .btn-capture {
-            background: #e53e3e;
-            display: none;
-        }
-        .btn-switch {
-            background: #4a5568;
-            display: none;
-        }
+        .btn-capture { background: #e53e3e; display: none; }
+        .btn-switch { background: #4a5568; display: none; }
+        .btn-rank { background: #3182ce; }
+
         #video-container {
             margin: 15px auto;
             max-width: 420px;
@@ -106,61 +102,103 @@
             margin: 15px 0;
         }
 
-        /* 🏆 랭킹 섹션 */
-        .ranking-container {
-            margin: 35px auto 20px auto;
-            max-width: 440px;
-            background: #fff;
-            border-radius: 16px;
-            padding: 18px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        /* 📋 전체 랭킹 모달 폼 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: #ffffff;
+            border-radius: 18px;
+            width: 90%;
+            max-width: 480px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             text-align: left;
         }
-        .ranking-title {
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 12px;
+            margin-bottom: 10px;
+        }
+        .modal-title {
             font-size: 18px;
             font-weight: 800;
             color: #222;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
         }
-        .ranking-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
+        .btn-close {
+            background: #eee;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
         }
-        .ranking-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 8px;
-            border-bottom: 1px solid #f0f0f0;
+        .modal-body {
+            overflow-y: auto;
+            flex: 1;
+        }
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 14px;
         }
-        .ranking-item:last-child { border-bottom: none; }
-        .rank-badge {
-            width: 24px;
+        .ranking-table th {
+            background: #f8f9fa;
+            padding: 10px 8px;
+            color: #555;
+            font-weight: 700;
+            border-bottom: 1px solid #ddd;
+        }
+        .ranking-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+        .rank-num {
             font-weight: bold;
             color: #777;
+            text-align: center;
+            width: 35px;
         }
         .rank-1 { color: #f59e0b; font-size: 16px; }
         .rank-2 { color: #94a3b8; font-size: 15px; }
         .rank-3 { color: #b45309; font-size: 15px; }
-        .rank-info { flex: 1; margin: 0 10px; }
-        .rank-user { font-weight: bold; color: #333; }
-        .rank-name { font-size: 12px; color: #888; }
-        .rank-price { font-weight: 800; color: #e53e3e; }
+        .rank-user { font-weight: bold; color: #222; display: block; }
+        .rank-item-name { font-size: 12px; color: #777; }
+        .rank-price {
+            font-weight: 800;
+            color: #e53e3e;
+            text-align: right;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
-    <h1>📷 사진 촬영</h1>
+    <h1>📦 물건 가치 측정기</h1>
     <div class="username">접속 아이디: <b id="current-user">{{ username }}</b></div>
 
     <div class="btn-group">
         <button id="btn-start" class="btn" onclick="startCamera()">📷 카메라 켜기</button>
         <button id="btn-switch" class="btn btn-switch" onclick="switchCamera()">🔄 전환</button>
         <button id="btn-snap" class="btn btn-capture" onclick="takeSnapshot()">📸 촬영하기</button>
+        <button class="btn btn-rank" onclick="openRankingModal()">🏆 전체 랭킹 보기</button>
     </div>
 
     <div id="loading">⚡ AI가 순식간에 감정하고 랭킹 등록 중...</div>
@@ -172,7 +210,7 @@
 
     <canvas id="canvas"></canvas>
 
-    <!-- 결과 카드 -->
+    <!-- 내 측정 결과 카드 -->
     <div id="result-box">
         <span class="badge" id="res-tag">#감정완료</span>
         <div class="item-name" id="res-name">식별 대상</div>
@@ -180,15 +218,32 @@
         <div class="reason" id="res-reason">이유</div>
     </div>
 
-    <!-- 🏆 명예의 전당 (실시간 랭킹) -->
-    <div class="ranking-container">
-        <div class="ranking-title">
-            <span>🏆 실시간 몸값 TOP 10</span>
-            <button onclick="loadRankings()" style="background:none; border:none; cursor:pointer; font-size:13px; color:#666;">🔄 새로고침</button>
+    <!-- 🏆 전체 랭킹 모달 폼 -->
+    <div id="ranking-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">🏆 물건 가치 명예의 전당</span>
+                <button class="btn-close" onclick="closeRankingModal()">✕ 닫기</button>
+            </div>
+            <div class="modal-body">
+                <table class="ranking-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align:center;">순위</th>
+                            <th>등록자 / 감정 물건</th>
+                            <th style="text-align:right;">측정 가치</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ranking-tbody">
+                        <tr>
+                            <td colspan="3" style="text-align:center; padding:20px; color:#999;">
+                                랭킹을 불러오는 중...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <ul class="ranking-list" id="ranking-list">
-            <li style="text-align:center; padding:15px; color:#999;">랭킹 불러오는 중...</li>
-        </ul>
     </div>
 
     <script>
@@ -200,55 +255,64 @@
         const btnSnap = document.getElementById("btn-snap");
         const loading = document.getElementById("loading");
         const resultBox = document.getElementById("result-box");
+        const modal = document.getElementById("ranking-modal");
+        const tbody = document.getElementById("ranking-tbody");
         const username = document.getElementById("current-user").innerText;
 
         let stream = null;
-        let currentFacingMode = "environment"; // 기본값: 후면 카메라
+        let currentFacingMode = "environment";
 
-        window.onload = loadRankings;
-
-        async function loadRankings() {
+        // --- 랭킹 모달 제어 ---
+        async function openRankingModal() {
+            modal.style.display = "flex";
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px; color:#999;">데이터 갱신 중...</td></tr>';
+            
             try {
                 const res = await fetch("/api/rankings");
                 const list = await res.json();
-                const container = document.getElementById("ranking-list");
-                
+
                 if (list.length === 0) {
-                    container.innerHTML = '<li style="text-align:center; padding:15px; color:#999;">아직 등록된 랭킹이 없습니다.</li>';
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px; color:#999;">아직 측정된 기록이 없습니다.</td></tr>';
                     return;
                 }
 
-                container.innerHTML = list.map(item => `
-                    <li class="ranking-item">
-                        <span class="rank-badge ${item.rank <= 3 ? 'rank-' + item.rank : ''}">${item.rank}</span>
-                        <div class="rank-info">
+                tbody.innerHTML = list.map(item => `
+                    <tr>
+                        <td class="rank-num ${item.rank <= 3 ? 'rank-' + item.rank : ''}">${item.rank}</td>
+                        <td>
                             <span class="rank-user">${item.username}</span>
-                            <span class="rank-name">(${item.name})</span>
-                        </div>
-                        <span class="rank-price">${item.price}</span>
-                    </li>
+                            <span class="rank-item-name">${item.name}</span>
+                        </td>
+                        <td class="rank-price">${item.price}</td>
+                    </tr>
                 `).join('');
-            } catch (e) {
-                console.error("랭킹 로드 실패:", e);
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px; color:#e53e3e;">랭킹 조회 실패</td></tr>';
             }
         }
 
-        // 카메라 스트림 시작 함수
+        function closeRankingModal() {
+            modal.style.display = "none";
+        }
+
+        // 배경 클릭 시 모달 닫기
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                closeRankingModal();
+            }
+        };
+
+        // --- 카메라 제어 ---
         async function openCameraStream(mode) {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
             }
 
-            const constraints = {
-                video: {
-                    facingMode: { ideal: mode },
-                    width: { ideal: 1280 }
-                },
-                audio: false
-            };
-
             try {
-                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: mode }, width: { ideal: 1280 } },
+                    audio: false
+                });
                 video.srcObject = stream;
                 video.style.display = "block";
                 preview.style.display = "none";
@@ -258,7 +322,6 @@
                 btnSwitch.style.display = "inline-block";
                 btnSnap.style.display = "inline-block";
             } catch (err) {
-                // 'ideal' 옵션 실패 시 기본 카메라로 폴백 시도
                 try {
                     stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
                     video.srcObject = stream;
@@ -268,7 +331,7 @@
                     btnSwitch.style.display = "inline-block";
                     btnSnap.style.display = "inline-block";
                 } catch (fallbackErr) {
-                    alert("카메라 실행 실패: " + err.message);
+                    alert("카메라 연결 실패: " + err.message);
                 }
             }
         }
@@ -281,7 +344,6 @@
             openCameraStream(currentFacingMode);
         }
 
-        // 전면 <-> 후면 전환
         function switchCamera() {
             currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
             openCameraStream(currentFacingMode);
@@ -292,7 +354,6 @@
             canvas.height = video.videoHeight || 480;
             const ctx = canvas.getContext("2d");
 
-            // 전면 카메라(셀카)일 때 좌우 반전 처리
             if (currentFacingMode === "user") {
                 ctx.translate(canvas.width, 0);
                 ctx.scale(-1, 1);
@@ -334,8 +395,6 @@
                         document.getElementById("res-price").innerText = data.price;
                         document.getElementById("res-reason").innerText = "💬 " + data.reason;
                         resultBox.style.display = "block";
-
-                        loadRankings();
                     } else {
                         alert("분석 실패: " + (data.detail || "오류 발생"));
                     }

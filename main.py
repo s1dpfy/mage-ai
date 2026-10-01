@@ -12,7 +12,7 @@ from firebase_admin import credentials, firestore
 from google import genai
 from PIL import Image
 
-# 1. 환경 변수 및 디렉터리 경로 설정
+# 1. 환경 변수 및 경로 설정
 load_dotenv()
 GEMINI_API_KEY = os.getenv("key") or os.getenv("GEMINI_API_KEY")
 
@@ -20,7 +20,6 @@ BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = BASE_DIR / "templates"
 
 # 2. Firebase 시크릿 파일 경로 판별
-# 우선순위: .env의 admin 경로 -> /etc/secrets/ 디렉터리 -> 로컬 루트 파일
 env_admin_path = os.getenv("admin")
 candidates = [
     env_admin_path,
@@ -52,7 +51,7 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 # 4. FastAPI 앱 설정
-app = FastAPI(title="AI Price Lens & Ranking")
+app = FastAPI(title="물건 가치 측정기")
 
 
 # 5. HTML 라우트
@@ -73,14 +72,14 @@ async def start_camera_page(username: str = Form(...)):
     return HTMLResponse(content=html_content.replace("{{ username }}", username))
 
 
-# 6. 실시간 랭킹 조회 API
+# 6. 전체 랭킹 조회 API (상위 50위)
 @app.get("/api/rankings")
 async def get_rankings():
     try:
         docs = (
             db.collection("rankings")
             .order_by("price_num", direction=firestore.Query.DESCENDING)
-            .limit(10)
+            .limit(50)
             .stream()
         )
 
@@ -90,7 +89,7 @@ async def get_rankings():
             rankings.append({
                 "rank": rank,
                 "username": item.get("username", "익명"),
-                "name": item.get("name", ""),
+                "name": item.get("name", "미확인 물건"),
                 "tag": item.get("tag", ""),
                 "price": item.get("price", "0원"),
                 "price_num": item.get("price_num", 0),
@@ -111,7 +110,7 @@ async def evaluate_image(
         raise HTTPException(status_code=500, detail="Gemini API Key가 누락되었습니다.")
 
     try:
-        # 이미지 로드 및 512px 경량화
+        # 512px 경량화
         image_bytes = await file.read()
         image = Image.open(io.BytesIO(image_bytes))
         image.thumbnail((512, 512), Image.Resampling.LANCZOS)
@@ -121,7 +120,7 @@ async def evaluate_image(
         client = genai.Client(api_key=GEMINI_API_KEY)
 
         prompt = """
-        사진 속 대상을 식별하고 대략적인 가격이나 가치를 유쾌하고 빠르게 판정해줘.
+        사진 속 대상을 식별하고 대략적인 가치나 가격을 유쾌하고 빠르게 판정해줘.
 
         [판정 룰 - 엄격 준수]
         1. 사람/얼굴:
@@ -133,8 +132,8 @@ async def evaluate_image(
 
         반드시 다음 JSON 형식으로만 출력하고 정수형 price_num 필드를 포함할 것:
         {
-          "name": "식별 대상 요약 (예: 카페 훈남 알바상)",
-          "tag": "카테고리 태그 (예: 훈남 상한가)",
+          "name": "식별 대상 요약 (예: 카페 훈남 알바상, 빈티지 머그컵, 에어팟 프로)",
+          "tag": "카테고리 태그 (예: 훈남 상한가, 레트로 감성, 생활 필수품)",
           "price": "180만 원",
           "price_num": 1800000,
           "reason": "왜 이 가격인지 한 줄 이유"
@@ -159,7 +158,7 @@ async def evaluate_image(
                 data["price"] = "200만 원 (상한선)"
                 data["price_num"] = 2000000
 
-        # Firestore rankings 컬렉션 저장
+        # Firestore에 저장
         record = {
             "username": username,
             "name": data.get("name", "미확인"),
