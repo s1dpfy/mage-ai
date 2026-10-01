@@ -2,9 +2,9 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>가치 측정기 - PC버전</title>
-    <!-- 폰트 적용 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>가치 측정기</title>
+    <!-- Pretendard 폰트 -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard-dynamic-subset.css" />
     
     <style>
@@ -14,13 +14,13 @@
             --bg-color: #f8fafc;
             --surface: #ffffff;
             --text-main: #0f172a;
-            --text-sub: #64748b;
+            --text-sub: #475569;
             --danger: #ef4444;
-            --border: #e2e8f0;
-            --radius: 8px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --border: #cbd5e1;
+            --radius: 12px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 12px 24px -4px rgba(0,0,0,0.12);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,53 +33,63 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            font-size: 16px;
         }
 
+        /* 상단 네비게이션 바 */
         header {
             background-color: var(--surface);
             border-bottom: 1px solid var(--border);
-            padding: 0 32px;
-            height: 64px;
+            padding: 0 24px;
+            height: 70px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            box-shadow: var(--shadow-sm);
         }
 
         header h1 {
-            font-size: 20px;
-            font-weight: 700;
+            font-size: 22px;
+            font-weight: 800;
             color: var(--text-main);
             letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .user-info {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 14px;
+            font-size: 15px;
+            font-weight: 600;
             color: var(--text-sub);
         }
 
         .user-info span {
             background-color: #e0e7ff;
             color: var(--primary);
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 15px;
         }
 
+        /* 메인 레이아웃 (PC: 2단 / Mobile: 1단 반응형) */
         main {
             flex: 1;
             max-width: 1200px;
-            margin: 40px auto;
+            margin: 28px auto;
             width: 100%;
-            padding: 0 32px;
+            padding: 0 24px;
             display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 32px;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 28px;
             align-items: start;
         }
 
+        /* 좌측: 카메라 섹션 */
         .camera-section {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -89,8 +99,8 @@
         }
 
         .section-title {
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 18px;
+            font-weight: 700;
             margin-bottom: 16px;
             color: var(--text-main);
             display: flex;
@@ -100,19 +110,24 @@
 
         #video-container {
             width: 100%;
-            aspect-ratio: 16 / 9;
-            background: #1e293b;
-            border-radius: 4px;
+            aspect-ratio: 16 / 10;
+            background: #0f172a;
+            border-radius: 8px;
             position: relative;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
+            border: 1px solid var(--border);
         }
 
         #video-container p {
             color: #94a3b8;
-            font-size: 14px;
+            font-size: 16px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         #video, #preview {
@@ -122,18 +137,19 @@
             display: none;
         }
 
+        /* 스캐닝 애니메이션 */
         #scanner {
             display: none;
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(79, 70, 229, 0.1);
+            background: rgba(79, 70, 229, 0.12);
             z-index: 10;
         }
         #scanner-line {
             width: 100%;
-            height: 2px;
+            height: 3px;
             background: var(--primary);
-            box-shadow: 0 0 12px var(--primary);
+            box-shadow: 0 0 16px var(--primary);
             position: absolute;
             animation: scan 2s infinite alternate ease-in-out;
         }
@@ -142,6 +158,7 @@
             100% { top: 100%; }
         }
 
+        /* 컨트롤 버튼 그룹 */
         .controls {
             margin-top: 20px;
             display: flex;
@@ -149,17 +166,18 @@
         }
 
         .btn {
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 4px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 8px;
             border: 1px solid transparent;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            user-select: none;
         }
 
         .btn:active { transform: translateY(1px); }
@@ -168,8 +186,19 @@
         .btn-outline { background-color: white; border-color: var(--border); color: var(--text-main); }
         .btn-outline:hover { background-color: var(--bg-color); }
         
-        .btn-lg { padding: 12px 24px; font-size: 15px; flex: 1; }
+        .btn-lg { padding: 14px 24px; font-size: 17px; flex: 1; }
 
+        /* 안내 배지 (단축키 용) */
+        .badge {
+            background: rgba(255,255,255,0.25);
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        /* 우측: 결과 섹션 */
         .result-section {
             display: flex;
             flex-direction: column;
@@ -186,18 +215,19 @@
 
         #empty-state {
             text-align: center;
-            padding: 40px 0;
+            padding: 50px 0;
             color: var(--text-sub);
-            font-size: 14px;
+            font-size: 15px;
+            line-height: 1.6;
         }
 
         #loading-state {
             display: none;
             text-align: center;
-            padding: 40px 0;
+            padding: 50px 0;
             color: var(--primary);
-            font-weight: 600;
-            font-size: 14px;
+            font-weight: 700;
+            font-size: 16px;
             animation: pulse 1.5s infinite;
         }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -208,34 +238,36 @@
 
         .res-tag {
             display: inline-block;
-            background: #f1f5f9;
-            color: var(--text-sub);
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
+            background: #e0e7ff;
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
             margin-bottom: 12px;
         }
 
-        .res-name { font-size: 16px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
-        .res-price { font-size: 36px; font-weight: 800; color: var(--text-main); margin-bottom: 24px; letter-spacing: -1px; }
+        .res-name { font-size: 18px; font-weight: 700; color: var(--text-sub); margin-bottom: 8px; }
+        .res-price { font-size: 42px; font-weight: 900; color: var(--text-main); margin-bottom: 20px; letter-spacing: -1.5px; }
         
         .res-reason {
             background: var(--bg-color);
             border: 1px solid var(--border);
-            padding: 16px;
-            border-radius: 4px;
-            font-size: 14px;
+            padding: 18px;
+            border-radius: 8px;
+            font-size: 15px;
             color: var(--text-main);
             line-height: 1.6;
+            font-weight: 500;
         }
 
+        /* 모달 (랭킹 팝업) */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(2px);
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
             z-index: 1000; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.2s;
+            opacity: 0; transition: opacity 0.2s ease;
         }
         .modal-overlay.show { display: flex; opacity: 1; }
         
@@ -243,13 +275,13 @@
             background: var(--surface);
             width: 100%;
             max-width: 600px;
-            max-height: 80vh;
+            max-height: 85vh;
             border-radius: var(--radius);
             box-shadow: var(--shadow-lg);
             display: flex;
             flex-direction: column;
             transform: scale(0.95);
-            transition: transform 0.2s;
+            transition: transform 0.2s ease;
         }
         .modal-overlay.show .modal-content { transform: scale(1); }
 
@@ -260,9 +292,10 @@
             justify-content: space-between;
             align-items: center;
         }
-        .modal-title { font-size: 18px; font-weight: 700; }
+        .modal-title { font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
         .btn-close { 
-            background: transparent; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub); 
+            background: transparent; border: none; font-size: 24px; cursor: pointer; color: var(--text-sub); 
+            display: flex; align-items: center; justify-content: center; padding: 4px;
         }
 
         .ranking-list {
@@ -279,47 +312,114 @@
             border-bottom: 1px solid var(--border);
         }
         .rank-item:last-child { border-bottom: none; }
-        .rank-num { width: 36px; font-size: 16px; font-weight: 700; color: var(--text-sub); flex-shrink: 0; }
+        .rank-num { width: 36px; font-size: 18px; font-weight: 800; color: var(--text-sub); flex-shrink: 0; }
         .rank-1 { color: var(--primary); }
         
-        /* 랭킹 이미지 썸네일 스타일 */
         .rank-img {
-            width: 48px;
-            height: 48px;
-            border-radius: 6px;
+            width: 52px;
+            height: 52px;
+            border-radius: 8px;
             object-fit: cover;
-            margin-right: 14px;
+            margin-right: 16px;
             border: 1px solid var(--border);
             background-color: #f1f5f9;
             flex-shrink: 0;
         }
 
         .rank-info { flex: 1; min-width: 0; }
-        .rank-user { font-weight: 600; color: var(--text-main); margin-right: 8px; display: inline-block; }
-        .rank-obj { font-size: 13px; color: var(--text-sub); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .rank-price { font-size: 16px; font-weight: 700; color: var(--text-main); text-align: right; flex-shrink: 0; margin-left: 12px; }
+        .rank-user { font-weight: 700; font-size: 15px; color: var(--text-main); margin-right: 8px; }
+        .rank-obj { font-size: 14px; color: var(--text-sub); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+        .rank-price { font-size: 18px; font-weight: 800; color: var(--text-main); text-align: right; flex-shrink: 0; margin-left: 12px; }
 
         canvas { display: none; }
+
+        /* ==========================================
+           모바일 반응형 스타일에 대한 미디어 쿼리
+        ========================================== */
+        @media (max-width: 768px) {
+            header {
+                padding: 0 16px;
+                height: 60px;
+            }
+            header h1 { font-size: 18px; }
+            .user-info { font-size: 13px; }
+            .user-info span { padding: 4px 10px; font-size: 13px; }
+
+            main {
+                grid-template-columns: 1fr;
+                margin: 16px auto;
+                padding: 0 16px;
+                gap: 20px;
+            }
+
+            .camera-section, .panel {
+                padding: 18px;
+            }
+
+            #video-container {
+                aspect-ratio: 4 / 3;
+            }
+
+            .btn-lg {
+                padding: 16px;
+                font-size: 16px;
+            }
+
+            .res-price {
+                font-size: 34px;
+            }
+
+            .modal-content {
+                width: 92%;
+                max-height: 80vh;
+            }
+
+            .rank-item {
+                padding: 12px 16px;
+            }
+            .rank-img {
+                width: 44px;
+                height: 44px;
+                margin-right: 12px;
+            }
+            .rank-price {
+                font-size: 16px;
+            }
+            .badge {
+                display: none; /* 모바일에서는 스페이스바 안내 배지 숨김 */
+            }
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>가치 측정기</h1>
+        <h1>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            가치 측정기
+        </h1>
         <div class="user-info">
-            접속자: <span id="current-user">{{ username }}</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span id="current-user">{{ username }}</span>
         </div>
     </header>
 
     <main>
+        <!-- 좌측 카메라 컨트롤 패널 -->
         <div class="camera-section">
             <div class="section-title">
-                대상 촬영
-                <button id="btn-switch" class="btn btn-outline" style="display:none;" onclick="switchCamera()">카메라 전환</button>
+                <span>대상 촬영</span>
+                <button id="btn-switch" class="btn btn-outline" style="display:none;" onclick="switchCamera()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0-4.418-3.582-8-8-8s-8 3.582-8 8e0 4.418 3.582 8 8 8"></path><path d="M20 10l-4-4m4 4l-4 4M4 14l4-4m-4 4l4 4"></path></svg>
+                    전환
+                </button>
             </div>
             
             <div id="video-container">
-                <p id="placeholder">아래 버튼을 눌러 카메라를 활성화하세요.</p>
+                <p id="placeholder">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    아래 버튼을 눌러 카메라를 활성화하세요.
+                </p>
                 <video id="video" autoplay playsinline muted></video>
                 <img id="preview" alt="촬영된 이미지">
                 
@@ -329,22 +429,32 @@
             </div>
 
             <div class="controls">
-                <button id="btn-start" class="btn btn-primary btn-lg" onclick="startCamera()">카메라 켜기</button>
-                <button id="btn-snap" class="btn btn-primary btn-lg" style="display:none;" onclick="takeSnapshot()">가치 측정하기</button>
-                <button id="btn-retry" class="btn btn-outline btn-lg" style="display:none;" onclick="startCamera()">다시 찍기</button>
+                <button id="btn-start" class="btn btn-primary btn-lg" onclick="startCamera()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    카메라 켜기 <span class="badge">Space</span>
+                </button>
+                <button id="btn-snap" class="btn btn-primary btn-lg" style="display:none;" onclick="takeSnapshot()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8m-4-4h8"></path></svg>
+                    가치 측정하기 <span class="badge">Space</span>
+                </button>
+                <button id="btn-retry" class="btn btn-outline btn-lg" style="display:none;" onclick="startCamera()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                    다시 찍기
+                </button>
             </div>
         </div>
 
+        <!-- 우측 결과 및 부가 기능 패널 -->
         <div class="result-section">
             <div class="panel">
                 <div class="section-title">분석 결과</div>
                 
                 <div id="empty-state">
-                    대상을 촬영하고 측정 버튼을 누르면<br>여기에 결과가 표시됩니다.
+                    대상을 촬영하고 측정 버튼을 누르면<br>여기에 감정 결과가 표시됩니다.
                 </div>
                 
                 <div id="loading-state">
-                    AI가 대상을 분석하고 있습니다...
+                    AI가 대상을 정밀 분석하고 있습니다...
                 </div>
 
                 <div id="result-box">
@@ -357,22 +467,29 @@
 
             <div class="panel">
                 <div class="section-title">명예의 전당</div>
-                <p style="font-size: 14px; color: var(--text-sub); margin-bottom: 16px;">
-                    지금까지 측정된 가장 가치 있는 기록들을 확인해보세요.
+                <p style="font-size: 15px; color: var(--text-sub); margin-bottom: 18px;">
+                    지금까지 측정된 가장 가치 있는 최고가 기록들을 확인해보세요.
                 </p>
-                <button class="btn btn-outline" style="width: 100%;" onclick="openRankingModal()">랭킹 보기</button>
+                <button class="btn btn-outline" style="width: 100%; font-size: 16px;" onclick="openRankingModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>
+                    랭킹 전체보기
+                </button>
             </div>
         </div>
     </main>
 
+    <!-- 랭킹 모달 -->
     <div id="ranking-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">가치 랭킹</div>
+                <div class="modal-title">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path></svg>
+                    가치 랭킹
+                </div>
                 <button class="btn-close" onclick="closeRankingModal()">✕</button>
             </div>
             <div class="ranking-list" id="ranking-list">
-                <!-- 랭킹 리스트 생성 구역 -->
+                <!-- 랭킹 목록 로딩 -->
             </div>
         </div>
     </div>
@@ -402,18 +519,34 @@
         let stream = null;
         let currentFacingMode = "user";
 
+        // 스페이스바 단축키 전역 이벤트 제어
+        window.addEventListener("keydown", (e) => {
+            if (e.code === "Space" || e.key === " ") {
+                // 입력 필드나 텍스트 작성 중일 때는 동작 방지
+                if (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) return;
+
+                e.preventDefault(); // 스크롤 차단
+
+                if (btnSnap.style.display !== "none") {
+                    takeSnapshot();
+                } else if (btnStart.style.display !== "none") {
+                    startCamera();
+                }
+            }
+        });
+
         async function openRankingModal() {
             modal.style.display = "flex";
             setTimeout(() => modal.classList.add("show"), 10); 
             
-            rankingList.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--text-sub); font-size:14px;">데이터를 불러오는 중입니다...</div>';
+            rankingList.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--text-sub); font-size:15px;">데이터를 불러오는 중입니다...</div>';
             
             try {
                 const res = await fetch("/api/rankings");
                 const list = await res.json();
 
                 if (list.length === 0) {
-                    rankingList.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--text-sub); font-size:14px;">아직 측정된 기록이 없습니다.</div>';
+                    rankingList.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--text-sub); font-size:15px;">아직 측정된 기록이 없습니다.</div>';
                     return;
                 }
 
@@ -429,7 +562,7 @@
                     </div>
                 `).join('');
             } catch (err) {
-                rankingList.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--danger); font-size:14px;">랭킹 조회에 실패했습니다.</div>';
+                rankingList.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--danger); font-size:15px;">랭킹 조회에 실패했습니다.</div>';
             }
         }
 
