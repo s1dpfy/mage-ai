@@ -12,40 +12,55 @@ from firebase_admin import credentials, firestore
 from google import genai
 from PIL import Image
 
-# 1. 환경 변수 및 절대 경로 설정
+# 1. 환경 변수 및 디렉터리 경로 설정
 load_dotenv()
 GEMINI_API_KEY = os.getenv("key") or os.getenv("GEMINI_API_KEY")
-ADMIN_KEY_PATH = os.getenv("admin", "serviceAccountKey.json")
 
-# 실행 위치와 상관없이 templates 폴더를 정확히 찾도록 고정
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = BASE_DIR / "templates"
 
-# 2. Firebase 초기화
+# 2. Firebase 시크릿 파일 경로 판별
+# 우선순위: .env의 admin 경로 -> /etc/secrets/ 디렉터리 -> 로컬 루트 파일
+env_admin_path = os.getenv("admin")
+candidates = [
+    env_admin_path,
+    "/etc/secrets/serviceAccountKey.json",
+    "/etc/secrets/firebase.json",
+    str(BASE_DIR / "serviceAccountKey.json")
+]
+
+SECRET_KEY_PATH = None
+for candidate in candidates:
+    if candidate and os.path.exists(candidate):
+        SECRET_KEY_PATH = candidate
+        break
+
+if not SECRET_KEY_PATH:
+    raise RuntimeError(
+        "❌ Firebase 인증 파일을 찾을 수 없습니다.\n"
+        "'/etc/secrets/serviceAccountKey.json' 또는 프로젝트 루트의 'serviceAccountKey.json'을 확인하세요."
+    )
+
+# 3. Firebase 초기화
 if not firebase_admin._apps:
-    if not os.path.exists(ADMIN_KEY_PATH):
-        raise RuntimeError(f"❌ Firebase 키 파일을 찾을 수 없습니다: '{ADMIN_KEY_PATH}'")
     try:
-        cred = credentials.Certificate(ADMIN_KEY_PATH)
+        cred = credentials.Certificate(SECRET_KEY_PATH)
         firebase_admin.initialize_app(cred)
     except Exception as e:
         raise RuntimeError(f"❌ Firebase 인증 실패: {e}")
 
 db = firestore.client()
 
-# 3. FastAPI 앱 생성
+# 4. FastAPI 앱 설정
 app = FastAPI(title="AI Price Lens & Ranking")
 
 
-# 4. 웹 페이지 라우트 (Jinja2 충돌 없는 안전한 로딩 방식)
+# 5. HTML 라우트
 @app.get("/", response_class=HTMLResponse)
 async def login_page():
     index_file = TEMPLATES_DIR / "index.html"
     if not index_file.exists():
-        return HTMLResponse(
-            f"❌ '{index_file}' 경로에 파일이 없습니다. 폴더 구조를 확인하세요.", 
-            status_code=404
-        )
+        return HTMLResponse(f"❌ '{index_file}' 파일이 없습니다.", status_code=404)
     return HTMLResponse(content=index_file.read_text(encoding="utf-8"))
 
 
@@ -53,17 +68,12 @@ async def login_page():
 async def start_camera_page(username: str = Form(...)):
     camera_file = TEMPLATES_DIR / "camera.html"
     if not camera_file.exists():
-        return HTMLResponse(
-            f"❌ '{camera_file}' 경로에 파일이 없습니다.", 
-            status_code=404
-        )
+        return HTMLResponse(f"❌ '{camera_file}' 파일이 없습니다.", status_code=404)
     html_content = camera_file.read_text(encoding="utf-8")
-    # {{ username }} 치환
-    html_content = html_content.replace("{{ username }}", username)
-    return HTMLResponse(content=html_content)
+    return HTMLResponse(content=html_content.replace("{{ username }}", username))
 
 
-# 5. 실시간 TOP 10 랭킹 API
+# 6. 실시간 랭킹 조회 API
 @app.get("/api/rankings")
 async def get_rankings():
     try:
@@ -91,7 +101,7 @@ async def get_rankings():
         raise HTTPException(status_code=500, detail=f"랭킹 조회 실패: {e}")
 
 
-# 6. 이미지 감정 및 랭킹 저장 API
+# 7. 이미지 감정 및 Firestore 등록 API
 @app.post("/evaluate")
 async def evaluate_image(
     username: str = Form(...),
@@ -101,7 +111,7 @@ async def evaluate_image(
         raise HTTPException(status_code=500, detail="Gemini API Key가 누락되었습니다.")
 
     try:
-        # 이미지 최적화 (512px 초경량)
+        # 이미지 로드 및 512px 경량화
         image_bytes = await file.read()
         image = Image.open(io.BytesIO(image_bytes))
         image.thumbnail((512, 512), Image.Resampling.LANCZOS)
@@ -141,6 +151,7 @@ async def evaluate_image(
         match = re.search(r"\{.*\}", raw_text, re.DOTALL)
         data = json.loads(match.group(0)) if match else json.loads(raw_text)
 
+        # 200만 원 상한선 검증
         price_num = int(data.get("price_num", 0))
         if "사람" in data.get("tag", "") or "관상" in data.get("name", ""):
             if price_num > 2000000:
@@ -148,7 +159,7 @@ async def evaluate_image(
                 data["price"] = "200만 원 (상한선)"
                 data["price_num"] = 2000000
 
-        # Firestore에 저장
+        # Firestore rankings 컬렉션 저장
         record = {
             "username": username,
             "name": data.get("name", "미확인"),
