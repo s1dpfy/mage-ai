@@ -9,7 +9,7 @@
             margin: 0;
             padding: 20px 15px;
             text-align: center;
-            font-family: sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: #f5f5f5;
         }
         h1 { margin-bottom: 5px; }
@@ -18,21 +18,31 @@
             color: #555;
             margin-bottom: 15px;
         }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
         .btn {
             display: inline-block;
-            padding: 14px 28px;
+            padding: 13px 22px;
             background: #222;
             color: white;
             border-radius: 12px;
-            font-size: 18px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
             border: none;
-            margin: 5px;
         }
         .btn:active { transform: scale(0.97); }
         .btn-capture {
             background: #e53e3e;
+            display: none;
+        }
+        .btn-switch {
+            background: #4a5568;
             display: none;
         }
         #video-container {
@@ -147,9 +157,10 @@
     <h1>📷 사진 촬영</h1>
     <div class="username">접속 아이디: <b id="current-user">{{ username }}</b></div>
 
-    <div>
+    <div class="btn-group">
         <button id="btn-start" class="btn" onclick="startCamera()">📷 카메라 켜기</button>
-        <button id="btn-snap" class="btn btn-capture" onclick="takeSnapshot()">📸 찰칵! 촬영하기</button>
+        <button id="btn-switch" class="btn btn-switch" onclick="switchCamera()">🔄 전환</button>
+        <button id="btn-snap" class="btn btn-capture" onclick="takeSnapshot()">📸 촬영하기</button>
     </div>
 
     <div id="loading">⚡ AI가 순식간에 감정하고 랭킹 등록 중...</div>
@@ -161,7 +172,7 @@
 
     <canvas id="canvas"></canvas>
 
-    <!-- 내 측정 결과 -->
+    <!-- 결과 카드 -->
     <div id="result-box">
         <span class="badge" id="res-tag">#감정완료</span>
         <div class="item-name" id="res-name">식별 대상</div>
@@ -185,13 +196,15 @@
         const canvas = document.getElementById("canvas");
         const preview = document.getElementById("preview");
         const btnStart = document.getElementById("btn-start");
+        const btnSwitch = document.getElementById("btn-switch");
         const btnSnap = document.getElementById("btn-snap");
         const loading = document.getElementById("loading");
         const resultBox = document.getElementById("result-box");
         const username = document.getElementById("current-user").innerText;
-        let stream = null;
 
-        // 페이지 열릴 때 랭킹 바로 로드
+        let stream = null;
+        let currentFacingMode = "environment"; // 기본값: 후면 카메라
+
         window.onload = loadRankings;
 
         async function loadRankings() {
@@ -220,38 +233,84 @@
             }
         }
 
-        async function startCamera() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert("카메라 권한을 얻을 수 없습니다. 보안 컨텍스트(HTTPS 또는 localhost)에서 실행해주세요.");
-                return;
+        // 카메라 스트림 시작 함수
+        async function openCameraStream(mode) {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
             }
+
+            const constraints = {
+                video: {
+                    facingMode: { ideal: mode },
+                    width: { ideal: 1280 }
+                },
+                audio: false
+            };
+
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
                 video.style.display = "block";
                 preview.style.display = "none";
                 resultBox.style.display = "none";
+
                 btnStart.style.display = "none";
+                btnSwitch.style.display = "inline-block";
                 btnSnap.style.display = "inline-block";
             } catch (err) {
-                alert("카메라 연결 실패: " + err.message);
+                // 'ideal' 옵션 실패 시 기본 카메라로 폴백 시도
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                    video.srcObject = stream;
+                    video.style.display = "block";
+                    preview.style.display = "none";
+                    btnStart.style.display = "none";
+                    btnSwitch.style.display = "inline-block";
+                    btnSnap.style.display = "inline-block";
+                } catch (fallbackErr) {
+                    alert("카메라 실행 실패: " + err.message);
+                }
             }
+        }
+
+        function startCamera() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("카메라 권한을 얻을 수 없습니다. HTTPS 주소로 접속했는지 확인하세요.");
+                return;
+            }
+            openCameraStream(currentFacingMode);
+        }
+
+        // 전면 <-> 후면 전환
+        function switchCamera() {
+            currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
+            openCameraStream(currentFacingMode);
         }
 
         function takeSnapshot() {
             canvas.width = video.videoWidth || 640;
             canvas.height = video.videoHeight || 480;
             const ctx = canvas.getContext("2d");
+
+            // 전면 카메라(셀카)일 때 좌우 반전 처리
+            if (currentFacingMode === "user") {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+            }
+
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             preview.src = canvas.toDataURL("image/jpeg");
             preview.style.display = "block";
             video.style.display = "none";
             btnSnap.style.display = "none";
+            btnSwitch.style.display = "none";
             btnStart.style.display = "inline-block";
             btnStart.innerText = "🔄 다시 찍기";
 
-            if (stream) stream.getTracks().forEach(track => track.stop());
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
 
             loading.style.display = "block";
             resultBox.style.display = "none";
@@ -276,14 +335,13 @@
                         document.getElementById("res-reason").innerText = "💬 " + data.reason;
                         resultBox.style.display = "block";
 
-                        // 랭킹 목록 자동 갱신
                         loadRankings();
                     } else {
                         alert("분석 실패: " + (data.detail || "오류 발생"));
                     }
                 } catch (e) {
                     loading.style.display = "none";
-                    alert("서버 연결 실패");
+                    alert("서버 통신 실패");
                 }
             }, "image/jpeg", 0.85);
         }
