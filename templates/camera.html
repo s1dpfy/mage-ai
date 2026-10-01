@@ -2,342 +2,423 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>가치 측정기</title>
-    <!-- Pretendard 폰트 적용 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가치 측정기 - PC버전</title>
+    <!-- 폰트 적용 -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard-dynamic-subset.css" />
     
     <style>
         :root {
-            --primary: #3182f6;
-            --primary-hover: #1b64da;
-            --bg-color: #f2f4f6;
+            /* 전문적이고 차분한 데스크탑 테마 (SaaS 스타일) */
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc;
             --surface: #ffffff;
-            --text-main: #191f28;
-            --text-sub: #8b95a1;
-            --danger: #f04452;
-            --border: #e5e8eb;
-            --radius-lg: 24px;
-            --radius-md: 16px;
-            --radius-sm: 12px;
-            --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.08);
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+            --radius: 8px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-            background-color: #e5e8eb;
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--bg-color);
             color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        #app-container {
-            width: 100%;
-            max-width: 480px;
-            background: var(--bg-color);
+            line-height: 1.5;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            position: relative;
-            box-shadow: 0 0 20px rgba(0,0,0,0.05);
-            overflow: hidden;
         }
 
+        /* 상단 네비게이션 바 */
         header {
-            padding: 24px 20px 16px;
-            background: var(--bg-color);
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-sub);
+        }
+
+        .user-info span {
+            background-color: #e0e7ff;
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* 메인 레이아웃 (좌우 2단 분리) */
+        main {
+            flex: 1;
+            max-width: 1200px;
+            margin: 40px auto;
+            width: 100%;
+            padding: 0 32px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+
+        /* 좌측: 카메라 섹션 */
+        .camera-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-main);
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
+            align-items: center;
         }
-        h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--text-main); }
-        .user-badge {
-            background: #e8f3ff;
-            color: var(--primary);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        main { padding: 0 20px 100px; flex: 1; }
 
         #video-container {
-            position: relative;
             width: 100%;
-            aspect-ratio: 3/4;
-            background: #000;
-            border-radius: var(--radius-lg);
+            aspect-ratio: 16 / 9; /* PC 웹캠에 맞는 가로 비율 */
+            background: #1e293b;
+            border-radius: 4px;
+            position: relative;
             overflow: hidden;
-            box-shadow: var(--shadow-sm);
-            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
+        #video-container p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
         #video, #preview {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: none;
         }
-        
+
+        /* 스캐닝 애니메이션 */
         #scanner {
             display: none;
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(49, 130, 246, 0.1);
+            background: rgba(79, 70, 229, 0.1);
             z-index: 10;
         }
         #scanner-line {
             width: 100%;
-            height: 4px;
+            height: 2px;
             background: var(--primary);
-            box-shadow: 0 0 10px var(--primary);
+            box-shadow: 0 0 12px var(--primary);
             position: absolute;
-            animation: scan 1.5s infinite alternate ease-in-out;
+            animation: scan 2s infinite alternate ease-in-out;
         }
         @keyframes scan {
             0% { top: 0; }
-            100% { top: calc(100% - 4px); }
+            100% { top: 100%; }
         }
 
+        /* 컨트롤 버튼 그룹 */
         .controls {
-            position: fixed;
-            bottom: 0; left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 480px;
-            padding: 20px;
-            background: linear-gradient(to top, rgba(242,244,246,1) 60%, rgba(242,244,246,0));
+            margin-top: 20px;
             display: flex;
-            flex-direction: column;
             gap: 12px;
-            z-index: 20;
         }
 
         .btn {
-            flex: 1;
-            padding: 16px 20px;
-            border-radius: var(--radius-md);
-            font-size: 16px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            letter-spacing: -0.3px;
-        }
-        .btn:active { transform: scale(0.96); }
-        
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 14px rgba(49, 130, 246, 0.3); }
-        .btn-primary:hover { background: var(--primary-hover); }
-        
-        .btn-secondary { background: var(--surface); color: var(--text-main); border: 1px solid var(--border); }
-        .btn-danger { background: var(--text-main); color: white; display: none; }
-        
-        /* 카메라 전환 버튼 (SVG 아이콘 적용) */
-        .btn-switch { 
-            background: rgba(0,0,0,0.5); 
-            color: white; 
-            position: absolute; 
-            bottom: 16px; 
-            right: 16px; 
-            width: 44px; 
-            height: 44px; 
-            border-radius: 50%; 
-            border: none;
-            padding: 0; 
-            display: none; 
-            z-index: 15; 
-            backdrop-filter: blur(4px);
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-switch:active { background: rgba(0,0,0,0.7); }
-        .btn-switch svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-        #loading-text {
-            text-align: center;
-            font-size: 15px;
+            padding: 10px 20px;
+            font-size: 14px;
             font-weight: 600;
-            color: var(--primary);
-            margin-top: 16px;
+            border-radius: 4px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:active { transform: translateY(1px); }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-outline { background-color: white; border-color: var(--border); color: var(--text-main); }
+        .btn-outline:hover { background-color: var(--bg-color); }
+        
+        .btn-lg { padding: 12px 24px; font-size: 15px; flex: 1; }
+
+        /* 우측: 결과 섹션 */
+        .result-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        #empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-sub);
+            font-size: 14px;
+        }
+
+        #loading-state {
             display: none;
+            text-align: center;
+            padding: 40px 0;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 14px;
             animation: pulse 1.5s infinite;
         }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
         #result-box {
             display: none;
-            margin-top: 20px;
-            background: var(--surface);
-            padding: 24px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-            animation: slideUp 0.4s ease-out;
-        }
-        .res-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-        .badge {
-            background: #f2f4f6; color: var(--text-sub); font-size: 13px; font-weight: 600;
-            padding: 6px 12px; border-radius: 20px;
-        }
-        .item-name { font-size: 15px; color: var(--text-sub); font-weight: 500; }
-        .price { font-size: 32px; font-weight: 800; color: var(--text-main); margin-bottom: 16px; letter-spacing: -1px; }
-        .reason-box {
-            background: #f9fafb; padding: 16px; border-radius: var(--radius-sm);
-            font-size: 14px; color: var(--text-main); line-height: 1.5; font-weight: 500;
-            border: 1px solid var(--border);
         }
 
+        .res-tag {
+            display: inline-block;
+            background: #f1f5f9;
+            color: var(--text-sub);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .res-name { font-size: 16px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
+        .res-price { font-size: 36px; font-weight: 800; color: var(--text-main); margin-bottom: 24px; letter-spacing: -1px; }
+        
+        .res-reason {
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* 모달 (PC형 중앙 팝업) */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px);
-            z-index: 1000; justify-content: center; align-items: flex-end;
-            opacity: 0; transition: opacity 0.3s;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(2px);
+            z-index: 1000; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.2s;
         }
         .modal-overlay.show { display: flex; opacity: 1; }
         
         .modal-content {
-            background: var(--surface); width: 100%; max-width: 480px; max-height: 85vh;
-            border-radius: 24px 24px 0 0; padding: 24px 20px; display: flex; flex-direction: column;
-            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background: var(--surface);
+            width: 100%;
+            max-width: 600px;
+            max-height: 80vh;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.95);
+            transition: transform 0.2s;
         }
-        .modal-overlay.show .modal-content { transform: translateY(0); }
+        .modal-overlay.show .modal-content { transform: scale(1); }
 
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-title { font-size: 18px; font-weight: 800; color: var(--text-main); }
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-title { font-size: 18px; font-weight: 700; }
         .btn-close { 
-            background: var(--bg-color); border: none; border-radius: 50%; width: 32px; height: 32px; 
-            cursor: pointer; color: var(--text-sub); display: flex; align-items: center; justify-content: center; 
+            background: transparent; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub); 
         }
-        .btn-close svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 
-        .ranking-list { overflow-y: auto; flex: 1; padding-bottom: 20px; margin: 0 -10px; padding: 0 10px; }
+        .ranking-list {
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex: 1;
+        }
+
         .rank-item {
-            display: flex; align-items: center; padding: 16px 12px;
-            border-bottom: 1px solid var(--border); gap: 12px;
+            display: flex;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
         }
         .rank-item:last-child { border-bottom: none; }
-        .rank-num { width: 28px; font-size: 15px; font-weight: 700; color: var(--text-sub); text-align: center; }
-        .rank-1 { color: var(--primary); font-size: 16px; font-weight: 800; }
-        .rank-2 { color: var(--text-main); font-size: 16px; font-weight: 800; }
-        .rank-3 { color: var(--text-main); font-size: 16px; font-weight: 800; }
-        
-        .rank-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-        .rank-user { font-size: 14px; font-weight: 700; color: var(--text-main); }
+        .rank-num { width: 40px; font-size: 16px; font-weight: 700; color: var(--text-sub); }
+        .rank-1 { color: var(--primary); }
+        .rank-info { flex: 1; }
+        .rank-user { font-weight: 600; color: var(--text-main); margin-right: 8px; }
         .rank-obj { font-size: 13px; color: var(--text-sub); }
-        .rank-price { font-size: 16px; font-weight: 800; color: var(--text-main); text-align: right; }
+        .rank-price { font-size: 16px; font-weight: 700; color: var(--text-main); text-align: right; }
 
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        #canvas { display: none; }
+        canvas { display: none; }
     </style>
 </head>
 <body>
-    <div id="app-container">
-        <header>
-            <h1>가치 측정기</h1>
-            <div class="user-badge" id="current-user">{{ username }}</div>
-        </header>
 
-        <main>
+    <header>
+        <h1>가치 측정기</h1>
+        <div class="user-info">
+            접속자: <span id="current-user">{{ username }}</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- 좌측 카메라 컨트롤 패널 -->
+        <div class="camera-section">
+            <div class="section-title">
+                대상 촬영
+                <button id="btn-switch" class="btn btn-outline" style="display:none;" onclick="switchCamera()">카메라 전환</button>
+            </div>
+            
             <div id="video-container">
-                <div id="placeholder" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:var(--text-sub); font-weight:600; text-align:center; width:100%; font-size: 14px;">
-                    하단 카메라 켜기 버튼을 눌러주세요
-                </div>
-                
+                <p id="placeholder">아래 버튼을 눌러 카메라를 활성화하세요.</p>
                 <video id="video" autoplay playsinline muted></video>
-                <img id="preview">
-                
-                <button id="btn-switch" class="btn-switch" onclick="switchCamera()" aria-label="카메라 전환">
-                    <svg viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                </button>
+                <img id="preview" alt="촬영된 이미지">
                 
                 <div id="scanner">
                     <div id="scanner-line"></div>
                 </div>
             </div>
 
-            <div id="loading-text">AI 분석 중입니다...</div>
-
-            <div id="result-box">
-                <div class="res-header">
-                    <div class="item-name" id="res-name">식별 대상</div>
-                    <span class="badge" id="res-tag">태그</span>
-                </div>
-                <div class="price" id="res-price">0원</div>
-                <div class="reason-box" id="res-reason">이유가 표시됩니다.</div>
-            </div>
-        </main>
-
-        <div class="controls">
-            <button id="btn-start" class="btn btn-primary" onclick="startCamera()">카메라 켜기</button>
-            <button id="btn-snap" class="btn btn-danger" onclick="takeSnapshot()">가치 측정하기</button>
-            <button class="btn btn-secondary" onclick="openRankingModal()">명예의 전당 보기</button>
-        </div>
-
-        <div id="ranking-modal" class="modal-overlay">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-title">가치 랭킹</div>
-                    <button class="btn-close" onclick="closeRankingModal()">
-                        <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"></path></svg>
-                    </button>
-                </div>
-                <div class="ranking-list" id="ranking-list">
-                    <div style="text-align:center; padding:40px 0; color:var(--text-sub); font-weight:500; font-size:14px;">데이터를 불러오는 중입니다.</div>
-                </div>
+            <div class="controls">
+                <button id="btn-start" class="btn btn-primary btn-lg" onclick="startCamera()">카메라 켜기</button>
+                <button id="btn-snap" class="btn btn-primary btn-lg" style="display:none;" onclick="takeSnapshot()">가치 측정하기</button>
+                <button id="btn-retry" class="btn btn-outline btn-lg" style="display:none;" onclick="startCamera()">다시 찍기</button>
             </div>
         </div>
 
-        <canvas id="canvas"></canvas>
+        <!-- 우측 결과 및 부가 기능 패널 -->
+        <div class="result-section">
+            <div class="panel">
+                <div class="section-title">분석 결과</div>
+                
+                <div id="empty-state">
+                    대상을 촬영하고 측정 버튼을 누르면<br>여기에 결과가 표시됩니다.
+                </div>
+                
+                <div id="loading-state">
+                    AI가 대상을 분석하고 있습니다...
+                </div>
+
+                <div id="result-box">
+                    <div class="res-tag" id="res-tag">카테고리</div>
+                    <div class="res-name" id="res-name">식별 대상</div>
+                    <div class="res-price" id="res-price">0원</div>
+                    <div class="res-reason" id="res-reason">분석 이유가 표시됩니다.</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="section-title">명예의 전당</div>
+                <p style="font-size: 14px; color: var(--text-sub); margin-bottom: 16px;">
+                    지금까지 측정된 가장 가치 있는 기록들을 확인해보세요.
+                </p>
+                <button class="btn btn-outline" style="width: 100%;" onclick="openRankingModal()">랭킹 보기</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 랭킹 모달 (PC형) -->
+    <div id="ranking-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">가치 랭킹</div>
+                <button class="btn-close" onclick="closeRankingModal()">✕</button>
+            </div>
+            <div class="ranking-list" id="ranking-list">
+                <!-- Data goes here -->
+            </div>
+        </div>
     </div>
+
+    <canvas id="canvas"></canvas>
 
     <script>
         const video = document.getElementById("video");
         const canvas = document.getElementById("canvas");
         const preview = document.getElementById("preview");
+        const placeholder = document.getElementById("placeholder");
+        
         const btnStart = document.getElementById("btn-start");
         const btnSwitch = document.getElementById("btn-switch");
         const btnSnap = document.getElementById("btn-snap");
-        const loadingText = document.getElementById("loading-text");
+        const btnRetry = document.getElementById("btn-retry");
+        
+        const emptyState = document.getElementById("empty-state");
+        const loadingState = document.getElementById("loading-state");
         const resultBox = document.getElementById("result-box");
         const scanner = document.getElementById("scanner");
-        const placeholder = document.getElementById("placeholder");
         
         const modal = document.getElementById("ranking-modal");
         const rankingList = document.getElementById("ranking-list");
         const username = document.getElementById("current-user").innerText;
 
         let stream = null;
-        let currentFacingMode = "environment";
+        let currentFacingMode = "user"; // PC는 보통 전면 웹캠을 기본으로 함
 
+        // 랭킹 모달 열기
         async function openRankingModal() {
             modal.style.display = "flex";
             setTimeout(() => modal.classList.add("show"), 10); 
             
-            rankingList.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--text-sub); font-weight:500; font-size:14px;">데이터 갱신 중입니다.</div>';
+            rankingList.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--text-sub); font-size:14px;">데이터를 불러오는 중입니다...</div>';
             
             try {
                 const res = await fetch("/api/rankings");
                 const list = await res.json();
 
                 if (list.length === 0) {
-                    rankingList.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--text-sub); font-weight:500; font-size:14px;">아직 측정된 기록이 없습니다.</div>';
+                    rankingList.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--text-sub); font-size:14px;">아직 측정된 기록이 없습니다.</div>';
                     return;
                 }
 
                 rankingList.innerHTML = list.map(item => `
                     <div class="rank-item">
-                        <div class="rank-num ${item.rank <= 3 ? 'rank-' + item.rank : ''}">${item.rank}</div>
+                        <div class="rank-num ${item.rank === 1 ? 'rank-1' : ''}">${item.rank}</div>
                         <div class="rank-info">
                             <span class="rank-user">${item.username}</span>
                             <span class="rank-obj">${item.name}</span>
@@ -346,19 +427,22 @@
                     </div>
                 `).join('');
             } catch (err) {
-                rankingList.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--danger); font-weight:500; font-size:14px;">랭킹 조회에 실패했습니다.</div>';
+                rankingList.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--danger); font-size:14px;">랭킹 조회에 실패했습니다.</div>';
             }
         }
 
+        // 랭킹 모달 닫기
         function closeRankingModal() {
             modal.classList.remove("show");
-            setTimeout(() => modal.style.display = "none", 300);
+            setTimeout(() => modal.style.display = "none", 200);
         }
 
+        // 모달 배경 클릭 시 닫기
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeRankingModal();
         });
 
+        // 카메라 시작
         async function openCameraStream(mode) {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
@@ -366,32 +450,35 @@
 
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { ideal: mode }, width: { ideal: 1080 } },
+                    // PC 웹캠에 맞게 가로 해상도(HD급) 요청
+                    video: { facingMode: { ideal: mode }, width: { ideal: 1280 }, height: { ideal: 720 } },
                     audio: false
                 });
                 
                 placeholder.style.display = "none";
-                video.srcObject = stream;
-                video.style.display = "block";
                 preview.style.display = "none";
-                resultBox.style.display = "none";
+                video.style.display = "block";
+                video.srcObject = stream;
+                
+                // 좌우 반전 처리 (사용자 방향일 경우 거울 모드)
+                if (mode === "user") {
+                    video.style.transform = "scaleX(-1)";
+                } else {
+                    video.style.transform = "scaleX(1)";
+                }
 
                 btnStart.style.display = "none";
-                btnSwitch.style.display = "flex";
-                btnSnap.style.display = "flex";
+                btnRetry.style.display = "none";
+                btnSnap.style.display = "inline-flex";
+                btnSwitch.style.display = "inline-flex";
+                
+                // 결과창 초기화
+                emptyState.style.display = "block";
+                resultBox.style.display = "none";
+                loadingState.style.display = "none";
+
             } catch (err) {
-                try {
-                    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-                    placeholder.style.display = "none";
-                    video.srcObject = stream;
-                    video.style.display = "block";
-                    preview.style.display = "none";
-                    
-                    btnStart.style.display = "none";
-                    btnSnap.style.display = "flex";
-                } catch (fallbackErr) {
-                    alert("카메라 권한을 허용해주세요. (HTTPS 환경 필요)");
-                }
+                alert("카메라 권한을 허용해주세요. (HTTPS 환경이 필요할 수 있습니다.)");
             }
         }
 
@@ -400,15 +487,17 @@
         }
 
         function switchCamera() {
-            currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
+            currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
             openCameraStream(currentFacingMode);
         }
 
+        // 촬영 및 측정
         function takeSnapshot() {
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
+            canvas.width = video.videoWidth || 1280;
+            canvas.height = video.videoHeight || 720;
             const ctx = canvas.getContext("2d");
 
+            // 거울 모드 반전 캔버스 처리
             if (currentFacingMode === "user") {
                 ctx.translate(canvas.width, 0);
                 ctx.scale(-1, 1);
@@ -418,20 +507,31 @@
 
             preview.src = canvas.toDataURL("image/jpeg");
             preview.style.display = "block";
+            
+            // 프리뷰도 반전 적용
+            if (currentFacingMode === "user") {
+                preview.style.transform = "scaleX(-1)";
+            } else {
+                preview.style.transform = "scaleX(1)";
+            }
+            
             video.style.display = "none";
             
             btnSnap.style.display = "none";
             btnSwitch.style.display = "none";
-            btnStart.style.display = "flex";
-            btnStart.innerText = "다시 찍기";
+            btnRetry.style.display = "inline-flex";
 
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
             }
 
-            loadingText.style.display = "block";
-            scanner.style.display = "block";
+            // 우측 패널 상태 변경
+            emptyState.style.display = "none";
             resultBox.style.display = "none";
+            loadingState.style.display = "block";
+            
+            // 좌측 스캐너 애니메이션
+            scanner.style.display = "block";
 
             canvas.toBlob(async function(blob) {
                 const formData = new FormData();
@@ -445,7 +545,7 @@
                     });
                     const data = await response.json();
                     
-                    loadingText.style.display = "none";
+                    loadingState.style.display = "none";
                     scanner.style.display = "none";
 
                     if (response.ok) {
@@ -455,12 +555,14 @@
                         document.getElementById("res-reason").innerText = data.reason;
                         resultBox.style.display = "block";
                     } else {
-                        alert("분석 실패: " + (data.detail || "오류가 발생했습니다."));
+                        emptyState.style.display = "block";
+                        emptyState.innerText = "분석 실패: " + (data.detail || "오류가 발생했습니다.");
                     }
                 } catch (e) {
-                    loadingText.style.display = "none";
+                    loadingState.style.display = "none";
                     scanner.style.display = "none";
-                    alert("서버와 통신할 수 없습니다.");
+                    emptyState.style.display = "block";
+                    emptyState.innerText = "서버와 통신할 수 없습니다.";
                 }
             }, "image/jpeg", 0.85);
         }
