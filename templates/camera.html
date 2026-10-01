@@ -56,7 +56,7 @@
             justify-content: space-between;
             align-items: flex-end;
         }
-        h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+        h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--text-main); }
         .user-badge {
             background: #e8f3ff;
             color: var(--primary);
@@ -131,6 +131,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            letter-spacing: -0.3px;
         }
         .btn:active { transform: scale(0.96); }
         
@@ -140,7 +141,7 @@
         .btn-secondary { background: var(--surface); color: var(--text-main); border: 1px solid var(--border); }
         .btn-danger { background: var(--text-main); color: white; display: none; }
         
-        /* 카메라 전환 버튼 (SVG 적용) */
+        /* 카메라 전환 버튼 (SVG 아이콘 적용) */
         .btn-switch { 
             background: rgba(0,0,0,0.5); 
             color: white; 
@@ -158,8 +159,10 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            transition: background 0.2s;
         }
-        .btn-switch svg { width: 22px; height: 22px; }
+        .btn-switch:active { background: rgba(0,0,0,0.7); }
+        .btn-switch svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
         #loading-text {
             text-align: center;
@@ -183,11 +186,11 @@
         }
         .res-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
         .badge {
-            background: #fff0f1; color: var(--danger); font-size: 12px; font-weight: 700;
+            background: #f2f4f6; color: var(--text-sub); font-size: 13px; font-weight: 600;
             padding: 6px 12px; border-radius: 20px;
         }
         .item-name { font-size: 15px; color: var(--text-sub); font-weight: 500; }
-        .price { font-size: 36px; font-weight: 800; color: var(--text-main); margin-bottom: 16px; letter-spacing: -1px; }
+        .price { font-size: 32px; font-weight: 800; color: var(--text-main); margin-bottom: 16px; letter-spacing: -1px; }
         .reason-box {
             background: #f9fafb; padding: 16px; border-radius: var(--radius-sm);
             font-size: 14px; color: var(--text-main); line-height: 1.5; font-weight: 500;
@@ -210,8 +213,12 @@
         .modal-overlay.show .modal-content { transform: translateY(0); }
 
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-title { font-size: 20px; font-weight: 800; }
-        .btn-close { background: var(--bg-color); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; font-weight: bold; cursor: pointer; color: var(--text-sub); display: flex; align-items: center; justify-content: center; }
+        .modal-title { font-size: 18px; font-weight: 800; color: var(--text-main); }
+        .btn-close { 
+            background: var(--bg-color); border: none; border-radius: 50%; width: 32px; height: 32px; 
+            cursor: pointer; color: var(--text-sub); display: flex; align-items: center; justify-content: center; 
+        }
+        .btn-close svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 
         .ranking-list { overflow-y: auto; flex: 1; padding-bottom: 20px; margin: 0 -10px; padding: 0 10px; }
         .rank-item {
@@ -219,12 +226,244 @@
             border-bottom: 1px solid var(--border); gap: 12px;
         }
         .rank-item:last-child { border-bottom: none; }
-        .rank-num { width: 28px; font-size: 16px; font-weight: 800; color: var(--text-sub); text-align: center; }
-        .rank-1 { color: #f59e0b; font-size: 18px; }
-        .rank-2 { color: #9ca3af; font-size: 18px; }
-        .rank-3 { color: #b45309; font-size: 18px; }
-        .rank-img { width: 56px; height: 56px; border-radius: 12px; object-fit: cover; background: #e5e8eb; }
-        .rank-info { flex: 1; }
-        .rank-name { font-size: 14px; color: var(--text-sub); margin-bottom: 4px; font-weight: 500; }
-        .rank-price { font-size: 17px; font-weight: 700; color: var(--text-main); }
-        .rank-user { font-size: 12px; color: var(--primary); font-weight: 600; padding: 4px 8px; background: #e8f3ff; border-radius: 12px; }알겠습니다. 이모지 다 빼고 담백하고 자연스럽게 답변할게요. 더 필요한 게 있으면 편하게 말씀해 주세요.
+        .rank-num { width: 28px; font-size: 15px; font-weight: 700; color: var(--text-sub); text-align: center; }
+        .rank-1 { color: var(--primary); font-size: 16px; font-weight: 800; }
+        .rank-2 { color: var(--text-main); font-size: 16px; font-weight: 800; }
+        .rank-3 { color: var(--text-main); font-size: 16px; font-weight: 800; }
+        
+        .rank-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .rank-user { font-size: 14px; font-weight: 700; color: var(--text-main); }
+        .rank-obj { font-size: 13px; color: var(--text-sub); }
+        .rank-price { font-size: 16px; font-weight: 800; color: var(--text-main); text-align: right; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        #canvas { display: none; }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <header>
+            <h1>가치 측정기</h1>
+            <div class="user-badge" id="current-user">{{ username }}</div>
+        </header>
+
+        <main>
+            <div id="video-container">
+                <div id="placeholder" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:var(--text-sub); font-weight:600; text-align:center; width:100%; font-size: 14px;">
+                    하단 카메라 켜기 버튼을 눌러주세요
+                </div>
+                
+                <video id="video" autoplay playsinline muted></video>
+                <img id="preview">
+                
+                <button id="btn-switch" class="btn-switch" onclick="switchCamera()" aria-label="카메라 전환">
+                    <svg viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                </button>
+                
+                <div id="scanner">
+                    <div id="scanner-line"></div>
+                </div>
+            </div>
+
+            <div id="loading-text">AI 분석 중입니다...</div>
+
+            <div id="result-box">
+                <div class="res-header">
+                    <div class="item-name" id="res-name">식별 대상</div>
+                    <span class="badge" id="res-tag">태그</span>
+                </div>
+                <div class="price" id="res-price">0원</div>
+                <div class="reason-box" id="res-reason">이유가 표시됩니다.</div>
+            </div>
+        </main>
+
+        <div class="controls">
+            <button id="btn-start" class="btn btn-primary" onclick="startCamera()">카메라 켜기</button>
+            <button id="btn-snap" class="btn btn-danger" onclick="takeSnapshot()">가치 측정하기</button>
+            <button class="btn btn-secondary" onclick="openRankingModal()">명예의 전당 보기</button>
+        </div>
+
+        <div id="ranking-modal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">가치 랭킹</div>
+                    <button class="btn-close" onclick="closeRankingModal()">
+                        <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="ranking-list" id="ranking-list">
+                    <div style="text-align:center; padding:40px 0; color:var(--text-sub); font-weight:500; font-size:14px;">데이터를 불러오는 중입니다.</div>
+                </div>
+            </div>
+        </div>
+
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const preview = document.getElementById("preview");
+        const btnStart = document.getElementById("btn-start");
+        const btnSwitch = document.getElementById("btn-switch");
+        const btnSnap = document.getElementById("btn-snap");
+        const loadingText = document.getElementById("loading-text");
+        const resultBox = document.getElementById("result-box");
+        const scanner = document.getElementById("scanner");
+        const placeholder = document.getElementById("placeholder");
+        
+        const modal = document.getElementById("ranking-modal");
+        const rankingList = document.getElementById("ranking-list");
+        const username = document.getElementById("current-user").innerText;
+
+        let stream = null;
+        let currentFacingMode = "environment";
+
+        async function openRankingModal() {
+            modal.style.display = "flex";
+            setTimeout(() => modal.classList.add("show"), 10); 
+            
+            rankingList.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--text-sub); font-weight:500; font-size:14px;">데이터 갱신 중입니다.</div>';
+            
+            try {
+                const res = await fetch("/api/rankings");
+                const list = await res.json();
+
+                if (list.length === 0) {
+                    rankingList.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--text-sub); font-weight:500; font-size:14px;">아직 측정된 기록이 없습니다.</div>';
+                    return;
+                }
+
+                rankingList.innerHTML = list.map(item => `
+                    <div class="rank-item">
+                        <div class="rank-num ${item.rank <= 3 ? 'rank-' + item.rank : ''}">${item.rank}</div>
+                        <div class="rank-info">
+                            <span class="rank-user">${item.username}</span>
+                            <span class="rank-obj">${item.name}</span>
+                        </div>
+                        <div class="rank-price">${item.price}</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                rankingList.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--danger); font-weight:500; font-size:14px;">랭킹 조회에 실패했습니다.</div>';
+            }
+        }
+
+        function closeRankingModal() {
+            modal.classList.remove("show");
+            setTimeout(() => modal.style.display = "none", 300);
+        }
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeRankingModal();
+        });
+
+        async function openCameraStream(mode) {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: mode }, width: { ideal: 1080 } },
+                    audio: false
+                });
+                
+                placeholder.style.display = "none";
+                video.srcObject = stream;
+                video.style.display = "block";
+                preview.style.display = "none";
+                resultBox.style.display = "none";
+
+                btnStart.style.display = "none";
+                btnSwitch.style.display = "flex";
+                btnSnap.style.display = "flex";
+            } catch (err) {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                    placeholder.style.display = "none";
+                    video.srcObject = stream;
+                    video.style.display = "block";
+                    preview.style.display = "none";
+                    
+                    btnStart.style.display = "none";
+                    btnSnap.style.display = "flex";
+                } catch (fallbackErr) {
+                    alert("카메라 권한을 허용해주세요. (HTTPS 환경 필요)");
+                }
+            }
+        }
+
+        function startCamera() {
+            openCameraStream(currentFacingMode);
+        }
+
+        function switchCamera() {
+            currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
+            openCameraStream(currentFacingMode);
+        }
+
+        function takeSnapshot() {
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext("2d");
+
+            if (currentFacingMode === "user") {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+            }
+
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            preview.src = canvas.toDataURL("image/jpeg");
+            preview.style.display = "block";
+            video.style.display = "none";
+            
+            btnSnap.style.display = "none";
+            btnSwitch.style.display = "none";
+            btnStart.style.display = "flex";
+            btnStart.innerText = "다시 찍기";
+
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+
+            loadingText.style.display = "block";
+            scanner.style.display = "block";
+            resultBox.style.display = "none";
+
+            canvas.toBlob(async function(blob) {
+                const formData = new FormData();
+                formData.append("username", username);
+                formData.append("file", blob, "photo.jpg");
+
+                try {
+                    const response = await fetch("/evaluate", {
+                        method: "POST",
+                        body: formData
+                    });
+                    const data = await response.json();
+                    
+                    loadingText.style.display = "none";
+                    scanner.style.display = "none";
+
+                    if (response.ok) {
+                        document.getElementById("res-tag").innerText = data.tag;
+                        document.getElementById("res-name").innerText = data.name;
+                        document.getElementById("res-price").innerText = data.price;
+                        document.getElementById("res-reason").innerText = data.reason;
+                        resultBox.style.display = "block";
+                    } else {
+                        alert("분석 실패: " + (data.detail || "오류가 발생했습니다."));
+                    }
+                } catch (e) {
+                    loadingText.style.display = "none";
+                    scanner.style.display = "none";
+                    alert("서버와 통신할 수 없습니다.");
+                }
+            }, "image/jpeg", 0.85);
+        }
+    </script>
+</body>
+</html>
